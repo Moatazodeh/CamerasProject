@@ -16,21 +16,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         start = (Button)findViewById(R.id.button);
-        //start.setOnClickListener(new View.OnClickListener() {
-          //  @Override
+        start.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+              Open();
+          }
 
-
-        //});
+        });
     }
 
     public void Open() {
-
         try {
             // intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
-
-
             Intent intent = new Intent(this,cameras.class);
-
             startActivity(intent);
 
 

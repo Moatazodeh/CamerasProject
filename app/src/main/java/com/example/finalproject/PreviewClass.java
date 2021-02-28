@@ -2,59 +2,69 @@ package com.example.finalproject;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.util.List;
 
 public class PreviewClass extends SurfaceView implements SurfaceHolder.Callback{
      Camera camera;
+     SurfaceHolder holder;
+
+
+    public PreviewClass(Context context) {
+        super(context);
+    }
 
     public PreviewClass(Context context, Camera camera) {
         super(context);
         this.camera = camera;
+        holder= getHolder();
+        holder.addCallback(this);
     }
 
 
     public static void setCameraDisplayOrientation(Activity activity, int cameraId, Camera camera){
 
-       Camera.CameraInfo info = new Camera.CameraInfo();
-
-        Camera.getCameraInfo(cameraId, info);
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation){
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT){
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;
-        }else{
-            result = (info.orientation - degrees + 360) % 360;
-        }
-
-        camera.setDisplayOrientation(result);
-
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        camera = Camera.open();
+        Camera.Parameters params = camera.getParameters();
+
+        //get the right size
+        List<Camera.Size> sizes = params.getSupportedPictureSizes();
+        Camera.Size mSize=null;
+
+        for(Camera.Size size : sizes){
+            mSize=size;
+        }
+
+
+        //change orientation
+        if(this.getResources().getConfiguration().orientation!= Configuration.ORIENTATION_LANDSCAPE){
+            params.set("orientation","portrait");
+            camera.setDisplayOrientation(90);
+            params.setRotation(90);
+        }
+        else{
+            params.set("orientation","landscape");
+            camera.setDisplayOrientation(0);
+            params.setRotation(0);
+        }
+
+        params.setPictureSize(mSize.width,mSize.height);
+        camera.setParameters(params);
+        try {
+            camera.setPreviewDisplay(holder);
+            camera.startPreview();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     @Override
